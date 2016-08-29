@@ -65,24 +65,22 @@ This function generates a random float value.
     func random(min min: CGFloat, max: CGFloat)-> CGFloat{
     return random() * (max-min) + min
     }
-    
-    
-    
+    /*
+     
+     */
     override init(size: CGSize) {
         let maxAspectRatio: CGFloat = 16.0/9.0
         let playableWidth = size.width / maxAspectRatio
         let margin = (size.width - playableWidth) / 2
         gameArea = CGRect(x: margin, y:0, width: playableWidth, height: size.height)
         super.init(size: size)
-        
-        
-    }
-    
+        }
+    /*
+     
+     */
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    
 /*
 UI Touch Functions
 */
@@ -111,7 +109,11 @@ UI Touch Functions
         player.physicsBody!.categoryBitMask = PhysicsCategories.Player
         player.physicsBody!.collisionBitMask = PhysicsCategories.None
         player.physicsBody!.contactTestBitMask = PhysicsCategories.Enemy
-        self.addChild(player)//
+        self.addChild(player)
+        
+/*
+Score Label
+*/
         
         scoreLabel.text = "Score : 0"
         scoreLabel.fontSize = 70
@@ -120,6 +122,9 @@ UI Touch Functions
         scoreLabel.position = CGPoint(x: self.size.width * 0.15 , y: self.size.height + scoreLabel.frame.size.height)
         scoreLabel.zPosition = 100
         self.addChild(scoreLabel)
+/*
+Lives Label
+*/
         
         livesLabel.text = "Lives: 3"
         livesLabel.fontSize = 70
@@ -128,7 +133,9 @@ UI Touch Functions
         livesLabel.position = CGPoint(x: self.size.width * 0.85, y: self.size.height + livesLabel.frame.size.height)
         livesLabel.zPosition = 100
         self.addChild(livesLabel)
-        
+/*
+TaptoStart Label
+*/
         tapToStartLabel.text = "Tap to Begin"
         tapToStartLabel.fontSize = 100
         tapToStartLabel.fontColor = SKColor.whiteColor()
@@ -143,6 +150,9 @@ UI Touch Functions
         scoreLabel.runAction(moveOntoScreenAction)
         livesLabel.runAction(moveOntoScreenAction)
         }
+/*
+This function
+*/
     
     func didBeginContact(contact: SKPhysicsContact) {
         var body1 = SKPhysicsBody()
@@ -179,18 +189,19 @@ UI Touch Functions
         }
     }
 /*
-This Function runs every time there is a tap on the screen
+This Function runs every time there is a tap on the screen. Whem you initially start the game it is pasued. The tap to begin logo appears.
+The game is initially in a pre game state and tapping the screen during pre game state starts the game. Then, after we are in the InGame
+state tapping the screen fires a bullet from the player ship.
 */
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         if currentGame == gameState.preGame{
             startGame()
         }
-            
+
         else if currentGame == gameState.inGame {
             fireBullet()
         }
     }
-    
 /*   
 This code allows the player ship to move side to side. For every touch we take two points of touch subtract
 them and make the difference the amount you "dragged" your finger across the screen.
@@ -222,7 +233,7 @@ Essentially the player will move in the x direction based on where your finger i
         
     }
 /*
-This function updates the
+This function updates the Screen
 */
     override func update(currentTime: NSTimeInterval) {
         let amountToMoveBackground = amountToMovePerSecond * CGFloat(deltaFrameTime)
@@ -250,7 +261,7 @@ This function updates the
         }
     }
 /*
-     
+This function sets the      
 */
     func loseALife() {
         /*
@@ -262,9 +273,6 @@ This function updates the
         let scaleDown = SKAction.scaleTo(1, duration: 0.2)
         let scaleSequence = SKAction.sequence([scaleUp,scaleDown])
         livesLabel.runAction(scaleSequence)
-        /*
-         
-         */
         if livesNumber == 0 {
         gameOver()
         }
