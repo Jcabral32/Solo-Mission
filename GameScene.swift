@@ -29,6 +29,7 @@ Global Variables*
         case inGame
         case afterGame
     }
+    
     let player = SKSpriteNode(imageNamed: "playerShip")// creates a Sprite Node object named player and assigns an asset to it.
     
     let gameArea: CGRect// creates a game area which is a rectangular shape.
@@ -341,7 +342,7 @@ This function sets the
     
     }
 /*
-     
+     TODO: Fix the Explosion
 */
     func spawnExplosion(spawnPosition: CGPoint){
         let explosion = SKSpriteNode(imageNamed: "explosion")
@@ -378,6 +379,7 @@ This function begins a new level. It contains our spawn sequence where an enemy 
         default: levelDuration = 0.5
             print("Cannot find level info")
         }
+        
         let spawn = SKAction.run(spawnEnemy)
         let waitToSpawn =  SKAction.wait(forDuration: levelDuration)
         let spawnSequence = SKAction.sequence([waitToSpawn, spawn])
@@ -407,6 +409,7 @@ This function begins a new level. It contains our spawn sequence where an enemy 
 /*
 This funtcion spawns an enemy at a random position on top of the screen. Enemies move in a random x-path towards the bottom of the screen.
 */
+    // TODO: Figure Out Why Enemies dont die when shot.
     func spawnEnemy(){
         let randomXStart = random(gameArea.minX, max: gameArea.maxX)// generates a random x position within the gameArea.
         let randomXEnd = random(gameArea.minX, max: gameArea.maxX) //  creates a different random x postion within the gameArea
