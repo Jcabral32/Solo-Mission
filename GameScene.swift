@@ -227,8 +227,8 @@ Essentially the player will move in the x direction based on where your finger i
                Which corresponds to the left side and the maximum x position the right side respectively.
                Making it appear your boxed in.
              */
-            if player.position.x > gameArea.minX - (player.size.width / 2) {
-                player.position.x = gameArea.minX - (player.size.width / 2)
+            if player.position.x > gameArea.maxX - (player.size.width / 2) {
+                player.position.x = gameArea.maxX - (player.size.width / 2)
             }
             if player.position.x < gameArea.minX + player.size.width / 3{
                 player.position.x = gameArea.minX + player.size.width / 3
