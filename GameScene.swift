@@ -21,6 +21,8 @@ Global Variables*
         static let Bullet: UInt32 = 0b10 // 2
         static let Enemy: UInt32 = 0b100 // 4
     }
+    
+    
     // Allows us to refrence our gameState as three distinct possible states. Can set up code for each state.
     enum gameState{
         case preGame
@@ -28,6 +30,7 @@ Global Variables*
         case afterGame
     }
     let player = SKSpriteNode(imageNamed: "playerShip")// creates a Sprite Node object named player and assigns an asset to it.
+    
     let gameArea: CGRect// creates a game area which is a rectangular shape.
     var levelNumber = 0
     var livesNumber = 3
@@ -39,8 +42,8 @@ Global Variables*
     let tapToStartLabel = SKLabelNode(fontNamed: "The Bold Font")
     
     //Scrolling Background Utility Variables
-    var lastUpdateTime: NSTimeInterval = 0
-    var deltaFrameTime: NSTimeInterval = 0
+    var lastUpdateTime: TimeInterval = 0
+    var deltaFrameTime: TimeInterval = 0
     var amountToMovePerSecond : CGFloat = 600
     
     var currentGame = gameState.preGame
@@ -62,7 +65,7 @@ This function generates a random float value.
     }
     
     // this function generates a random value between the given min and max values
-    func random(min min: CGFloat, max: CGFloat)-> CGFloat{
+    func random(_ min: CGFloat, max: CGFloat)-> CGFloat{
     return random() * (max-min) + min
     }
     /*
@@ -84,7 +87,7 @@ This function generates a random float value.
 /*
 UI Touch Functions
 */
-    override func didMoveToView(view: SKView) {
+    override func didMove(to view: SKView) {
         gameScore = 0
        
         for i in 0...1{
@@ -104,7 +107,7 @@ UI Touch Functions
         player.setScale(1)
         player.position = CGPoint(x: self.size.width/2, y: 0 - player.size.height)
         player.zPosition = 2
-        player.physicsBody = SKPhysicsBody(rectangleOfSize: player.size)
+        player.physicsBody = SKPhysicsBody(rectangleOf: player.size)
         player.physicsBody!.affectedByGravity = false
         player.physicsBody!.categoryBitMask = PhysicsCategories.Player
         player.physicsBody!.collisionBitMask = PhysicsCategories.None
@@ -117,8 +120,8 @@ Score Label
         
         scoreLabel.text = "Score : 0"
         scoreLabel.fontSize = 70
-        scoreLabel.fontColor = SKColor.whiteColor()
-        scoreLabel.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Left
+        scoreLabel.fontColor = SKColor.white
+        scoreLabel.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         scoreLabel.position = CGPoint(x: self.size.width * 0.15 , y: self.size.height + scoreLabel.frame.size.height)
         scoreLabel.zPosition = 100
         self.addChild(scoreLabel)
@@ -128,8 +131,8 @@ Lives Label
         
         livesLabel.text = "Lives: 3"
         livesLabel.fontSize = 70
-        livesLabel.fontColor = SKColor.whiteColor()
-        livesLabel.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Right
+        livesLabel.fontColor = SKColor.white
+        livesLabel.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.right
         livesLabel.position = CGPoint(x: self.size.width * 0.85, y: self.size.height + livesLabel.frame.size.height)
         livesLabel.zPosition = 100
         self.addChild(livesLabel)
@@ -138,17 +141,17 @@ TaptoStart Label
 */
         tapToStartLabel.text = "Tap to Begin"
         tapToStartLabel.fontSize = 100
-        tapToStartLabel.fontColor = SKColor.whiteColor()
+        tapToStartLabel.fontColor = SKColor.white
         tapToStartLabel.position = CGPoint(x: self.size.width/2, y: self.size.height/2)
         tapToStartLabel.zPosition = 1
         tapToStartLabel.alpha = 0
         self.addChild(tapToStartLabel)
-        let fadeInAction = SKAction.fadeInWithDuration(0.3)
-        tapToStartLabel.runAction(fadeInAction)
+        let fadeInAction = SKAction.fadeIn(withDuration: 0.3)
+        tapToStartLabel.run(fadeInAction)
         
-        let moveOntoScreenAction = SKAction.moveToY(self.size.height * 0.9, duration: 1.3)
-        scoreLabel.runAction(moveOntoScreenAction)
-        livesLabel.runAction(moveOntoScreenAction)
+        let moveOntoScreenAction = SKAction.moveTo(y: self.size.height * 0.9, duration: 1.3)
+        scoreLabel.run(moveOntoScreenAction)
+        livesLabel.run(moveOntoScreenAction)
         }
 /*
 This function
@@ -168,21 +171,21 @@ This function
         }
         if body1.categoryBitMask == PhysicsCategories.Player && body2.categoryBitMask == PhysicsCategories.Enemy{ // if the player hits the enemy
             if body1.node != nil{
-            spawnExplosion(body1.node!.position)
+                spawnExplosion(spawnPosition: body1.node!.position)
             }
             if body2.node != nil {
-            spawnExplosion(body2.node!.position)
+                spawnExplosion(spawnPosition: body2.node!.position)
             }
             body1.node?.removeFromParent()
             body2.node?.removeFromParent()
             gameOver()
         }
         /* we can only hit the enemy when he is on the screen. the enemy normally spawns off screen. */
-        if body1.categoryBitMask == PhysicsCategories.Bullet && body2.categoryBitMask == PhysicsCategories.Enemy && body2.node?.position.y < self.size.height {
+        if body1.categoryBitMask == PhysicsCategories.Bullet && body2.categoryBitMask == PhysicsCategories.Enemy && (body2.node?.position.y)! < self.size.height {
             // if the bullet hits the enemy
             if body2.node != nil {
                 addScore()
-                spawnExplosion(body2.node!.position)
+                spawnExplosion(spawnPosition: body2.node!.position)
             }
             body1.node?.removeFromParent()
             body2.node?.removeFromParent()
@@ -193,7 +196,7 @@ This Function runs every time there is a tap on the screen. Whem you initially s
 The game is initially in a pre game state and tapping the screen during pre game state starts the game. Then, after we are in the InGame
 state tapping the screen fires a bullet from the player ship.
 */
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if currentGame == gameState.preGame{
             startGame()
         }
@@ -207,11 +210,12 @@ This code allows the player ship to move side to side. For every touch we take t
 them and make the difference the amount you "dragged" your finger across the screen.
 Essentially the player will move in the x direction based on where your finger is.
 */
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    //TODO: Fix the movement logic in this method
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         
         for touch: AnyObject in touches{
-            let pointOfTouch = touch.locationInNode(self)//
-            let previousPointOfTouch = touch.previousLocationInNode(self)
+            let pointOfTouch = touch.location(in: self)
+            let previousPointOfTouch = touch.previousLocation(in: self)
             let amountDragged = pointOfTouch.x - previousPointOfTouch.x
             
             // If the game has started the player ship is allowed to move. This will affect the players position.
@@ -223,11 +227,11 @@ Essentially the player will move in the x direction based on where your finger i
                Which corresponds to the left side and the maximum x position the right side respectively.
                Making it appear your boxed in.
              */
-            if player.position.x > CGRectGetMaxX(gameArea) - (player.size.width / 2) {
-                player.position.x = CGRectGetMaxX(gameArea) - (player.size.width / 2)
+            if player.position.x > gameArea.minX - (player.size.width / 2) {
+                player.position.x = gameArea.minX - (player.size.width / 2)
             }
-            if player.position.x < CGRectGetMinX(gameArea) + player.size.width / 3{
-                player.position.x = CGRectGetMinX(gameArea) + player.size.width / 3
+            if player.position.x < gameArea.minX + player.size.width / 3{
+                player.position.x = gameArea.minX + player.size.width / 3
             }
         }
         
@@ -235,7 +239,7 @@ Essentially the player will move in the x direction based on where your finger i
 /*
 This function updates the Screen
 */
-    override func update(currentTime: NSTimeInterval) {
+    override func update(_ currentTime: TimeInterval) {
         let amountToMoveBackground = amountToMovePerSecond * CGFloat(deltaFrameTime)
         if lastUpdateTime == 0 {
         lastUpdateTime = currentTime
@@ -247,7 +251,7 @@ This function updates the Screen
         /*
          
          */
-        self.enumerateChildNodesWithName("Background"){
+        self.enumerateChildNodes(withName: "Background"){
         background, stop in
         /*
         
@@ -269,10 +273,10 @@ This function sets the
          */
         livesNumber -= 1
         livesLabel.text = " Lives: \(livesNumber)"
-        let scaleUp = SKAction.scaleTo(1.5, duration: 0.2)
-        let scaleDown = SKAction.scaleTo(1, duration: 0.2)
+        let scaleUp = SKAction.scale(to: 1.5, duration: 0.2)
+        let scaleDown = SKAction.scale(to: 1, duration: 0.2)
         let scaleSequence = SKAction.sequence([scaleUp,scaleDown])
-        livesLabel.runAction(scaleSequence)
+        livesLabel.run(scaleSequence)
         if livesNumber == 0 {
         gameOver()
         }
@@ -297,18 +301,18 @@ This function sets the
     func gameOver(){
         currentGame = gameState.afterGame
         self.removeAllActions()
-        self.enumerateChildNodesWithName("Bullet"){
+        self.enumerateChildNodes(withName: "Bullet"){
         bullet, stop in
             bullet.removeAllActions()
         }
-        self.enumerateChildNodesWithName("Enemy"){
+        self.enumerateChildNodes(withName: "Enemy"){
         enemy, stop in
             enemy.removeAllActions()
         }
-        let changeSceneAction = SKAction.runBlock(changeScene)
-        let waitToChangeScene = SKAction.waitForDuration(1)
+        let changeSceneAction = SKAction.run(changeScene)
+        let waitToChangeScene = SKAction.wait(forDuration: 1)
         let changeSceneSequence = SKAction.sequence([waitToChangeScene,changeSceneAction])
-        self.runAction(changeSceneSequence)
+        self.run(changeSceneSequence)
         
     }
 /*
@@ -316,14 +320,14 @@ This function sets the
 */
     func startGame(){
         currentGame = .inGame
-        let fadeOutAction = SKAction.fadeOutWithDuration(0.5)
+        let fadeOutAction = SKAction.fadeOut(withDuration: 0.5)
         let deleteAction = SKAction.removeFromParent()
         let deleteSequence = SKAction.sequence([fadeOutAction,deleteAction])
-        tapToStartLabel.runAction(deleteSequence)
-        let moveShipToScreen = SKAction.moveToY(self.size.height * 0.2, duration: 0.5)
-        let startLevelAction = SKAction.runBlock(startNewLevel)
+        tapToStartLabel.run(deleteSequence)
+        let moveShipToScreen = SKAction.moveTo(y: self.size.height * 0.2, duration: 0.5)
+        let startLevelAction = SKAction.run(startNewLevel)
         let startGameSequence = SKAction.sequence([moveShipToScreen,startLevelAction])
-        player.runAction(startGameSequence)
+        player.run(startGameSequence)
         
     }
 /*
@@ -332,7 +336,7 @@ This function sets the
     func changeScene() {
         let sceneToMoveTo = GameOverScene(size: self.size)
         sceneToMoveTo.scaleMode = self.scaleMode
-        let myTransition = SKTransition.fadeWithDuration(0.5)
+        let myTransition = SKTransition.fade(withDuration: 0.5)
         self.view!.presentScene(sceneToMoveTo, transition: myTransition)
     
     }
@@ -345,23 +349,23 @@ This function sets the
         explosion.zPosition = 3
         explosion.setScale(0)
         self.addChild(explosion)
-        let scaleIn = SKAction.scaleTo(1, duration: 0.1)
-        let fadeOut = SKAction.fadeOutWithDuration(0.1)
+        let scaleIn = SKAction.scale(to: 1, duration: 0.1)
+        let fadeOut = SKAction.fadeOut(withDuration: 0.1)
         let deleteExplosion = SKAction.removeFromParent()
         let explosionSequence = SKAction.sequence([scaleIn,fadeOut,deleteExplosion])
-        explosion.runAction(explosionSequence)
+        explosion.run(explosionSequence)
         }
 /*
 This function begins a new level. It contains our spawn sequence where an enemy spawns then there is a 1 second delay between each spawn.
 */
     func startNewLevel(){
-        var levelDuration = NSTimeInterval()
+        var levelDuration = TimeInterval()
         levelNumber += 1
         /*
          
          */
-        if self.actionForKey("spawningEnemies") != nil{
-        self.removeActionForKey("spawningEnemies")
+        if self.action(forKey: "spawningEnemies") != nil{
+            self.removeAction(forKey: "spawningEnemies")
         }
         /*
          
@@ -374,11 +378,11 @@ This function begins a new level. It contains our spawn sequence where an enemy 
         default: levelDuration = 0.5
             print("Cannot find level info")
         }
-        let spawn = SKAction.runBlock(spawnEnemy)
-        let waitToSpawn =  SKAction.waitForDuration(levelDuration)
+        let spawn = SKAction.run(spawnEnemy)
+        let waitToSpawn =  SKAction.wait(forDuration: levelDuration)
         let spawnSequence = SKAction.sequence([waitToSpawn, spawn])
-        let spawnForever = SKAction.repeatActionForever(spawnSequence)
-        self.runAction(spawnForever, withKey: "spawningEnemies")
+        let spawnForever = SKAction.repeatForever(spawnSequence)
+        self.run(spawnForever, withKey: "spawningEnemies")
         }
 /*
      
@@ -389,23 +393,23 @@ This function begins a new level. It contains our spawn sequence where an enemy 
         bullet.setScale(1)
         bullet.position = player.position
         bullet.zPosition = 1
-        bullet.physicsBody = SKPhysicsBody(rectangleOfSize: bullet.size)
+        bullet.physicsBody = SKPhysicsBody(rectangleOf: bullet.size)
         bullet.physicsBody!.affectedByGravity = false
         bullet.physicsBody!.categoryBitMask = PhysicsCategories.Bullet
         bullet.physicsBody!.collisionBitMask = PhysicsCategories.None
         bullet.physicsBody!.contactTestBitMask = PhysicsCategories.Enemy
         self.addChild(bullet)
-        let moveBullet = SKAction.moveToY(self.size.height + bullet.size.height, duration: 1)
+        let moveBullet = SKAction.moveTo(y: self.size.height + bullet.size.height, duration: 1)
         let deleteBullet = SKAction.removeFromParent()// deletes the bullet
         let bulletSequence = SKAction.sequence([moveBullet, deleteBullet])// lets you run the actions in the order you specify
-        bullet.runAction(bulletSequence)
+        bullet.run(bulletSequence)
     }
 /*
 This funtcion spawns an enemy at a random position on top of the screen. Enemies move in a random x-path towards the bottom of the screen.
 */
     func spawnEnemy(){
-        let randomXStart = random(min: CGRectGetMinX(gameArea), max: CGRectGetMaxX(gameArea))// generates a random x position within the gameArea.
-        let randomXEnd = random(min: CGRectGetMinX(gameArea), max: CGRectGetMaxX(gameArea)) //  creates a different random x postion within the gameArea
+        let randomXStart = random(gameArea.minX, max: gameArea.maxX)// generates a random x position within the gameArea.
+        let randomXEnd = random(gameArea.minX, max: gameArea.maxX) //  creates a different random x postion within the gameArea
         let startPoint = CGPoint(x: randomXStart, y: self.size.height * 1.2)// an initial random position x position and above the game area screen.
         let endPoint = CGPoint(x: randomXEnd, y: -self.size.height * 0.2) // a random point x point that ends below the game screen.
         let enemy = SKSpriteNode(imageNamed: "enemyShip")
@@ -413,21 +417,21 @@ This funtcion spawns an enemy at a random position on top of the screen. Enemies
         enemy.setScale(1)
         enemy.position = startPoint
         enemy.zPosition = 2
-        enemy.physicsBody = SKPhysicsBody(rectangleOfSize: enemy.size)
+        enemy.physicsBody = SKPhysicsBody(rectangleOf: enemy.size)
         enemy.physicsBody!.affectedByGravity = false
         enemy.physicsBody!.categoryBitMask = PhysicsCategories.Enemy
         enemy.physicsBody!.collisionBitMask = PhysicsCategories.None
         enemy.physicsBody!.contactTestBitMask = PhysicsCategories.Player | PhysicsCategories.Bullet
         self.addChild(enemy)
-        let moveEnemy = SKAction.moveTo(endPoint, duration: 1.5)// moves the enemy to the endpoint
+        let moveEnemy = SKAction.move(to: endPoint, duration: 1.5)// moves the enemy to the endpoint
         let deleteEnemy = SKAction.removeFromParent()
-        let lossOfLife = SKAction.runBlock(loseALife)
+        let lossOfLife = SKAction.run(loseALife)
         let enemySequence = SKAction.sequence([moveEnemy,deleteEnemy, lossOfLife])
         /*
          
          */
         if currentGame == gameState.inGame{
-            enemy.runAction(enemySequence)
+            enemy.run(enemySequence)
         }
         let deltaX = endPoint.x - startPoint.x
         let deltaY = endPoint.y - startPoint.y
